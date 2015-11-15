@@ -1,0 +1,44 @@
+
+
+
+#cancello il workspace
+rm(list=ls())
+
+#importo il package 'mlbench'
+library(mlbench)
+
+#importo il dataset 'Vehicle'
+data(Vehicle)
+
+#splitto il dataset in modo casuale con le seguenti proporzioni
+#training set: 70%
+#test set: 30%
+index.random<-sort(sample(nrow(Vehicle),size=nrow(Vehicle)*0.7,replace = F))
+train <- Vehicle[index.random,] 
+test <- Vehicle[-index.random,]
+
+#apprendo l'albero di decisione utilizzando la funzione party
+#importo la libreria party
+library(party)
+#per vedere quali sono gli attributi del feature vector
+#visualizzo una istanza del dataset Vehicle
+Vehicle[1,]
+formula <- Class ~ Comp + Circ + D.Circ + Rad.Ra + Pr.Axis.Ra + Max.L.Ra +Scat.Ra + Elong + Pr.Axis.Rect + Max.L.Rect + Sc.Var.Maxis + Sc.Var.maxis + Ra.Gyr + Skew.Maxis + Skew.maxis + Kurt.maxis + Kurt.Maxis + Holl.Ra 
+treeParty <- ctree(formula, data=train)
+
+#costruisco la matrice di confusione per l'albero appena appreso
+table(predict(treeParty, newdata=test), test$Class)
+
+#apprendo l'albero di decisione utilizzando la funzione rPart
+#importo la libreria rpart
+library(rpart)
+treeRpart <- rpart(Class ~ .,data=train)
+
+#costruisco la matrice di confusione sull'albero appena appreso
+testPredict <- predict(treeRpart,type='class', test[,-19])
+library(gmodels)
+CrossTable(test$Class, testPredict, prop.chisq=FALSE, prop.c=FALSE,prop.r=FALSE, dnn=c("actual default", "predicted default"))
+
+
+
+
